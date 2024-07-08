@@ -11,7 +11,9 @@ import (
 const addr = ":8080"
 func main(){
 	serveMux := http.ServeMux{}
-	serveMux.HandleFunc("/",homePage)
+	serveMux.HandleFunc("/home",homePage)
+	fileServer := http.FileServer(http.Dir("."))
+	serveMux.Handle("/",fileServer)
 	httpServer := http.Server{
 		Handler:&serveMux,
 		Addr: addr,
