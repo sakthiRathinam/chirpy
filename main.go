@@ -25,8 +25,8 @@ func main(){
 
 
 func registerRoutes(mux *http.ServeMux,apiConfig *apiConfig){
-	mux.HandleFunc("/healthz",healthCheck)
-	mux.HandleFunc("/metrics",apiConfig.getMetrics)
+	mux.HandleFunc("GET /healthz",healthCheck)
+	mux.HandleFunc("GET /metrics",apiConfig.getMetrics)
 	mux.HandleFunc("/reset",apiConfig.resetMetrics)
 	fileServer := http.FileServer(http.Dir("."))
 	mux.Handle("/app/*",http.StripPrefix("/app",apiConfig.middlewareIncrementHit(fileServer)))
