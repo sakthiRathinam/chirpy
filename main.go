@@ -9,11 +9,40 @@ import (
 
 
 const addr = ":8080"
+
+type apiConfig struct {
+	fileServerHits int
+}
+
+func (ac *apiConfig) middlewareIncrementHit(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request){
+		ac.fileServerHits = ac.fileServerHits + 1
+		next.ServeHTTP(w,r)
+	})
+}
+
+func (ac *apiConfig) getMetrics(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type","text/plain; charset=utf-8")
+	w.Write([]byte(fmt.Sprintf("Hits: %d",ac.fileServerHits)))
+	w.WriteHeader(200)
+}
+
+func (ac *apiConfig) resetMetrics(w http.ResponseWriter, r *http.Request) {
+	ac.fileServerHits = 0
+	w.Header().Set("Content-Type","text/plain; charset=utf-8")
+	w.Write([]byte(fmt.Sprintf("Hits: %d",ac.fileServerHits)))
+	w.WriteHeader(200)
+}
+
 func main(){
 	serveMux := http.ServeMux{}
+	apiConfig := apiConfig{}
 	serveMux.HandleFunc("/home",homePage)
+	serveMux.HandleFunc("/healthz",healthCheck)
+	serveMux.HandleFunc("/metrics",apiConfig.getMetrics)
+	serveMux.HandleFunc("/reset",apiConfig.resetMetrics)
 	fileServer := http.FileServer(http.Dir("."))
-	serveMux.Handle("/",fileServer)
+	serveMux.Handle("/app/*",http.StripPrefix("/app",apiConfig.middlewareIncrementHit(fileServer)))
 	httpServer := http.Server{
 		Handler:&serveMux,
 		Addr: addr,
@@ -25,6 +54,14 @@ func main(){
 	}
 }
 
+
+
+
+func healthCheck(w http.ResponseWriter,r *http.Request){
+	w.Header().Set("Content-Type","text/plain; charset=utf-8")
+	w.Write([]byte("OK"))
+	w.WriteHeader(200)
+}
 
 func homePage(w http.ResponseWriter,r *http.Request){
 	htmFile, err := os.Open("index.html")
