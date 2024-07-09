@@ -11,11 +11,7 @@ const addr = ":8080"
 func main(){
 	serveMux := http.ServeMux{}
 	apiConfig := apiConfig{}
-	serveMux.HandleFunc("/healthz",healthCheck)
-	serveMux.HandleFunc("/metrics",apiConfig.getMetrics)
-	serveMux.HandleFunc("/reset",apiConfig.resetMetrics)
-	fileServer := http.FileServer(http.Dir("."))
-	serveMux.Handle("/app/*",http.StripPrefix("/app",apiConfig.middlewareIncrementHit(fileServer)))
+	registerRoutes(&serveMux,&apiConfig)
 	httpServer := http.Server{
 		Handler:&serveMux,
 		Addr: addr,
@@ -25,4 +21,13 @@ func main(){
 	if err != nil {
 		fmt.Println("Failed while starting the server",err)
 	}
+}
+
+
+func registerRoutes(mux *http.ServeMux,apiConfig *apiConfig){
+	mux.HandleFunc("/healthz",healthCheck)
+	mux.HandleFunc("/metrics",apiConfig.getMetrics)
+	mux.HandleFunc("/reset",apiConfig.resetMetrics)
+	fileServer := http.FileServer(http.Dir("."))
+	mux.Handle("/app/*",http.StripPrefix("/app",apiConfig.middlewareIncrementHit(fileServer)))
 }
