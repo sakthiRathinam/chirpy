@@ -11,7 +11,13 @@ const addr = ":8080"
 func main(){
 	serveMux := http.ServeMux{}
 	apiConfig := apiConfig{}
-	registerRoutes(&serveMux,&apiConfig)
+	apiMux := http.ServeMux{}
+	adminMux := http.ServeMux{}
+	registerAPIRoutes(&apiMux,&apiConfig)
+	registerStaticServerRoutes(&serveMux,&apiConfig)
+	registerAdminRoutes(&adminMux,&apiConfig)
+	serveMux.Handle("/api/*",&apiMux)
+	serveMux.Handle("/admin/*",&adminMux)
 	httpServer := http.Server{
 		Handler:&serveMux,
 		Addr: addr,
@@ -24,10 +30,17 @@ func main(){
 }
 
 
-func registerRoutes(mux *http.ServeMux,apiConfig *apiConfig){
-	mux.HandleFunc("GET /healthz",healthCheck)
-	mux.HandleFunc("GET /metrics",apiConfig.getMetrics)
-	mux.HandleFunc("/reset",apiConfig.resetMetrics)
+func registerAPIRoutes(apiMux *http.ServeMux,apiConfig *apiConfig){
+	apiMux.HandleFunc("GET /api/healthz",healthCheck)
+	apiMux.HandleFunc("GET /api/metrics",apiConfig.getMetrics)
+	apiMux.HandleFunc("/api/reset",apiConfig.resetMetrics)
+}
+
+func registerAdminRoutes(apiMux *http.ServeMux,apiConfig *apiConfig){
+	apiMux.HandleFunc("GET /admin/metrics",apiConfig.getAdminMetrics)
+}
+
+func registerStaticServerRoutes(serverMux *http.ServeMux,apiConfig *apiConfig){
 	fileServer := http.FileServer(http.Dir("."))
-	mux.Handle("/app/*",http.StripPrefix("/app",apiConfig.middlewareIncrementHit(fileServer)))
+	serverMux.Handle("/app/*",http.StripPrefix("/app",apiConfig.middlewareIncrementHit(fileServer)))
 }
