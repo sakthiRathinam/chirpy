@@ -9,7 +9,7 @@ import (
 func sendJSONResponse(w http.ResponseWriter, toSend interface{},statusCode int) error {
 	data, err := json.Marshal(toSend)
 	if err != nil {
-		return sendErrorResponse(w,500)
+		return sendErrorResponse(w,500,"")
 	}
 	w.Header().Set("Content-Type","application/json")
 	w.Header().Set("Content-Type","application/json")
@@ -20,6 +20,10 @@ func sendJSONResponse(w http.ResponseWriter, toSend interface{},statusCode int) 
 }
 
 
-func sendErrorResponse(w http.ResponseWriter, statusCode int) error {
-	return sendJSONResponse(w,map[string]string{"Error":"Something went wrong"},statusCode)
+func sendErrorResponse(w http.ResponseWriter, statusCode int,customMessage string) error {
+	errorMessage := "Something went wrong"
+	if len(customMessage) > 0 {
+		errorMessage = customMessage
+	}
+	return sendJSONResponse(w,map[string]string{"error":errorMessage},statusCode)
 }

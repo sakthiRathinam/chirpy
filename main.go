@@ -33,6 +33,7 @@ func main(){
 func registerAPIRoutes(apiMux *http.ServeMux,apiConfig *apiConfig){
 	apiMux.HandleFunc("GET /api/healthz",healthCheck)
 	apiMux.HandleFunc("GET /api/metrics",apiConfig.getMetrics)
+	apiMux.HandleFunc("POST /api/validate_chirp",validateChirpyMessage)
 	apiMux.HandleFunc("/api/reset",apiConfig.resetMetrics)
 }
 
