@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"net/http"
+
+	"github.com/sakthiRathinam/chirpy/internal/storage"
 )
 
 
@@ -18,6 +20,9 @@ func main(){
 	registerAdminRoutes(&adminMux,&apiConfig)
 	serveMux.Handle("/api/*",&apiMux)
 	serveMux.Handle("/admin/*",&adminMux)
+	jsonDatabase := storage.CreateJsonDatabase()
+	jsonDatabase.EnsureDB()
+	jsonDatabase.DB.Chirp.AddChirps("first chirp")
 	httpServer := http.Server{
 		Handler:&serveMux,
 		Addr: addr,
