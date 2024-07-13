@@ -9,6 +9,10 @@ import (
 
 
 const addr = ":8080"
+const flushDB = true
+
+
+var jsonDatabase = setupJsonStorage()
 
 func main(){
 	serveMux := http.ServeMux{}
@@ -20,9 +24,6 @@ func main(){
 	registerAdminRoutes(&adminMux,&apiConfig)
 	serveMux.Handle("/api/*",&apiMux)
 	serveMux.Handle("/admin/*",&adminMux)
-	jsonDatabase := storage.CreateJsonDatabase()
-	jsonDatabase.EnsureDB()
-	jsonDatabase.DB.Chirp.AddChirps("first chirp")
 	httpServer := http.Server{
 		Handler:&serveMux,
 		Addr: addr,
@@ -35,10 +36,21 @@ func main(){
 }
 
 
+func setupJsonStorage() *storage.JsonDatabase{
+	jsonDatabase := storage.CreateJsonDatabase()
+	if flushDB{
+		jsonDatabase.FlushDB()
+		fmt.Println("Flush db called")
+	}
+	jsonDatabase.EnsureDB()
+	return jsonDatabase
+}
+
 func registerAPIRoutes(apiMux *http.ServeMux,apiConfig *apiConfig){
 	apiMux.HandleFunc("GET /api/healthz",healthCheck)
 	apiMux.HandleFunc("GET /api/metrics",apiConfig.getMetrics)
 	apiMux.HandleFunc("POST /api/validate_chirp",validateChirpyMessage)
+	apiMux.HandleFunc("POST /api/chirps",addChirp)
 	apiMux.HandleFunc("/api/reset",apiConfig.resetMetrics)
 }
 
