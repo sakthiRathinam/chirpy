@@ -23,15 +23,8 @@ func validateChirpyMessage(w http.ResponseWriter,r *http.Request){
 		sendErrorResponse(w,400,"Chirp is too long")
 		return
 	}
-	data, err := json.Marshal(map[string]string{"valid":"true","cleaned_body":replaceProfaneWords(chirpMessage.Body)})
-	if err != nil {
-		fmt.Println("Error decoding paramerts",err)
-		sendErrorResponse(w,500,"")
-		return 
-	}
-	w.Header().Set("Content-Type", "application/json")
-    w.WriteHeader(200)
-	w.Write(data) 
+	data := map[string]string{"valid":"true","cleaned_body":replaceProfaneWords(chirpMessage.Body)}
+	sendJSONResponse(w,data,201)
 }
 
 func addChirp(w http.ResponseWriter,r *http.Request){
@@ -52,16 +45,17 @@ func addChirp(w http.ResponseWriter,r *http.Request){
 		fmt.Println("Failed while adding chirp")
 		sendErrorResponse(w,500,"failed while adding the chirp, please try again!!!!")
 	}
-	data, err := json.Marshal(map[string]string{"id":fmt.Sprintf("%d",chirp.Id),"body":chirp.Body})
-	if err != nil {
-		fmt.Println("Error decoding paramerts",err)
-		sendErrorResponse(w,500,"")
-		return 
-	}
-	w.Header().Set("Content-Type", "application/json")
-    w.WriteHeader(200)
-	w.Write(data)
+	sendJSONResponse(w,chirp,201)
 	
+}
+
+func getAllChirps(w http.ResponseWriter,r *http.Request){
+	chirpObjs,err := jsonDatabase.GetChirps()
+	if err != nil{
+		sendErrorResponse(w,500,"error while fetching the chirps")
+		return
+	}
+	sendJSONResponse(w,chirpObjs,200)
 }
 
 

@@ -12,7 +12,6 @@ func sendJSONResponse(w http.ResponseWriter, toSend interface{},statusCode int) 
 		return sendErrorResponse(w,500,"")
 	}
 	w.Header().Set("Content-Type","application/json")
-	w.Header().Set("Content-Type","application/json")
 	w.WriteHeader(statusCode)
 	w.Write(data)
 	return nil

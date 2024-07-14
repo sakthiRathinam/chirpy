@@ -9,7 +9,7 @@ import (
 )
 type chirp struct {
 	Body string `json:"body"`
-	Id int `json:"int"`
+	Id int `json:"id"`
 }
 
 type chirpData struct {
@@ -56,11 +56,31 @@ func getJsonFileFromStorage(file *os.File) (databaseStructure,error) {
 	return chirpsData,nil
 }
 
+func (cd *chirpData) getAllChirps()([]chirp,error){
+	chirpsData := databaseStructure{}
+	chirps := []chirp{}
+	filePTR,err := os.OpenFile(db_path,os.O_RDWR|os.O_APPEND,7777)
+	if err != nil {
+		fmt.Println("Error while opening the file")
+		return chirps,errors.New("error while opening the file")
+		}
+	defer filePTR.Close()
+	fileData,err :=  io.ReadAll(filePTR)
+	if err != nil {
+		return chirps,err	
+	}
+	json.Unmarshal(fileData,&chirpsData)
+	for _,value := range chirpsData.Chirp.Chirps{
+		chirps = append(chirps, value)
+	}
+	return chirps,nil
+
+}
+
 func addChirpsData(dbStruct *databaseStructure,chirpMessage string) (chirp,error) {
 	if dbStruct.Chirp.Chirps == nil {
 		dbStruct.Chirp.Chirps = make(map[string]chirp)
 	}
-	fmt.Println(dbStruct.Chirp)
 	dbStruct.Chirp.IndexCounter = dbStruct.Chirp.IndexCounter + 1
 	chirpData := chirp{Body:chirpMessage,Id: dbStruct.Chirp.IndexCounter}
 	dbStruct.Chirp.Chirps[fmt.Sprintf("%d",dbStruct.Chirp.IndexCounter)] = chirpData

@@ -47,11 +47,15 @@ func (jd *JsonDatabase) FlushDB() error {
 }
 
 func (jd *JsonDatabase) AddChirp(chirpMessage string) (chirp,error) {
-	fmt.Println("started",chirpMessage)
 	jd.RMtx.Lock()
 	chirp,err := jd.DB.Chirp.addChirp(chirpMessage)
 	defer jd.RMtx.Unlock()
-	fmt.Println("finished",chirpMessage)
+	return chirp,err
+}
+func (jd *JsonDatabase) GetChirps() ([]chirp,error) {
+	jd.RMtx.RLock()
+	chirp,err := jd.DB.Chirp.getAllChirps()
+	defer jd.RMtx.RUnlock()
 	return chirp,err
 }
 
