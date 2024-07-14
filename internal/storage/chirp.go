@@ -77,6 +77,28 @@ func (cd *chirpData) getAllChirps()([]chirp,error){
 
 }
 
+
+func (cd *chirpData) getChirp(chirpID string)(chirp,error){
+	chirpsData := databaseStructure{}
+	chirp := chirp{}
+	filePTR,err := os.OpenFile(db_path,os.O_RDWR|os.O_APPEND,7777)
+	if err != nil {
+		fmt.Println("Error while opening the file")
+		return chirp,errors.New("error while opening the file")
+		}
+	defer filePTR.Close()
+	fileData,err :=  io.ReadAll(filePTR)
+	if err != nil {
+		return chirp,err
+	}
+	json.Unmarshal(fileData,&chirpsData)
+	chirp,exists := chirpsData.Chirp.Chirps[chirpID]
+	if !exists{
+		return chirp, errors.New("chirp not exists")
+	}
+	return chirp,nil
+}
+
 func addChirpsData(dbStruct *databaseStructure,chirpMessage string) (chirp,error) {
 	if dbStruct.Chirp.Chirps == nil {
 		dbStruct.Chirp.Chirps = make(map[string]chirp)

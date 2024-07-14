@@ -51,7 +51,9 @@ func registerAPIRoutes(apiMux *http.ServeMux,apiConfig *apiConfig){
 	apiMux.HandleFunc("GET /api/metrics",apiConfig.getMetrics)
 	apiMux.HandleFunc("POST /api/validate_chirp",validateChirpyMessage)
 	apiMux.HandleFunc("POST /api/chirps",addChirp)
+	apiMux.HandleFunc("POST /api/users",addUser)
 	apiMux.HandleFunc("GET /api/chirps",getAllChirps)
+	apiMux.HandleFunc("GET /api/chirps/{chirpID}",getChirp)
 	apiMux.HandleFunc("/api/reset",apiConfig.resetMetrics)
 }
 

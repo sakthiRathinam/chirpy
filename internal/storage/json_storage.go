@@ -15,6 +15,7 @@ const db_path = "database.json"
 
 type databaseStructure struct {
 	Chirp chirpData `json:"chirp"`
+	User userData `json:"user"`
 	
 }
 
@@ -52,9 +53,23 @@ func (jd *JsonDatabase) AddChirp(chirpMessage string) (chirp,error) {
 	defer jd.RMtx.Unlock()
 	return chirp,err
 }
+
+func (jd *JsonDatabase) AddUser(userEmail string) (user,error) {
+	jd.RMtx.Lock()
+	userObj,err := jd.DB.User.addUser(userEmail)
+	defer jd.RMtx.Unlock()
+	return userObj,err
+}
 func (jd *JsonDatabase) GetChirps() ([]chirp,error) {
 	jd.RMtx.RLock()
 	chirp,err := jd.DB.Chirp.getAllChirps()
+	defer jd.RMtx.RUnlock()
+	return chirp,err
+}
+
+func (jd *JsonDatabase) GetChirp(chirpID string) (chirp,error) {
+	jd.RMtx.RLock()
+	chirp,err := jd.DB.Chirp.getChirp(chirpID)
 	defer jd.RMtx.RUnlock()
 	return chirp,err
 }
@@ -81,10 +96,6 @@ func createDatabaseFile(path string) error {
 	if err != nil {
 		fmt.Println("failed during file creation")
 	}
-	return nil
-}
-
-func appendDummyStructre() error {
 	return nil
 }
 

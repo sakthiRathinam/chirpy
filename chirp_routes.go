@@ -6,47 +6,45 @@ import (
 	"net/http"
 	"regexp"
 )
-type requestPayload struct {
+type chirpRequestPayload struct {
 	Body string `json:"body"`
 }
 
 
 func validateChirpyMessage(w http.ResponseWriter,r *http.Request){
-	chirpMessage,err := extractMessageFromRequest(r)
+	chirpMessage,err := extractPayloadFromChirpRequest(r,chirpRequestPayload{})
 	if err != nil {
 		sendErrorResponse(w,500,"")
 	}
 
 	length_of_message := len(chirpMessage.Body)
-
 	if length_of_message > 140 {
 		sendErrorResponse(w,400,"Chirp is too long")
 		return
 	}
+
 	data := map[string]string{"valid":"true","cleaned_body":replaceProfaneWords(chirpMessage.Body)}
 	sendJSONResponse(w,data,201)
+	
 }
 
 func addChirp(w http.ResponseWriter,r *http.Request){
-	chirpMessage, err := extractMessageFromRequest(r)
+	chirpMessage, err := extractPayloadFromChirpRequest(r,chirpRequestPayload{})
 	if err != nil {
 		sendErrorResponse(w,500,"")
-	}
-
+		return
+		}
 	length_of_message := len(chirpMessage.Body)
-
 	if length_of_message > 140 {
 		sendErrorResponse(w,400,"Chirp is too long")
 		return
 	}
-	
 	chirp,err :=jsonDatabase.AddChirp(chirpMessage.Body)
 	if err != nil {
 		fmt.Println("Failed while adding chirp")
 		sendErrorResponse(w,500,"failed while adding the chirp, please try again!!!!")
-	}
+		}
 	sendJSONResponse(w,chirp,201)
-	
 }
 
 func getAllChirps(w http.ResponseWriter,r *http.Request){
@@ -59,8 +57,25 @@ func getAllChirps(w http.ResponseWriter,r *http.Request){
 }
 
 
-func extractMessageFromRequest(r *http.Request) (requestPayload,error) {
-	requestBody := requestPayload{}
+func getChirp(w http.ResponseWriter,r *http.Request){
+	chirpID := r.PathValue("chirpID")
+	fmt.Println(chirpID)
+	if chirpID == ""{
+		sendErrorResponse(w,400,"path value is not valid")
+		return
+	}
+
+	chirp,err := jsonDatabase.GetChirp(chirpID)
+	if err != nil {
+		sendErrorResponse(w,404,"chirp id not found")
+		return
+	}
+	sendJSONResponse(w,chirp,200)
+}
+
+
+func extractPayloadFromChirpRequest(r *http.Request,payload chirpRequestPayload) (chirpRequestPayload,error) {
+	requestBody := payload
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(&requestBody)
 	if err != nil {
