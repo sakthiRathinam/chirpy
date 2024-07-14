@@ -9,6 +9,7 @@ import (
 type user struct {
 	Email string `json:"email"`
 	Id int `json:"id"`
+	password string 
 }
 
 type userData struct {
@@ -50,6 +51,6 @@ func addUserData(dbStruct *databaseStructure,userEmail string) (user,error) {
 	}
 	dbStruct.Chirp.IndexCounter = dbStruct.Chirp.IndexCounter + 1
 	userData := user{Email:userEmail,Id: dbStruct.Chirp.IndexCounter}
-	dbStruct.User.UserData[fmt.Sprintf("%d",dbStruct.Chirp.IndexCounter)] = userData
+	dbStruct.User.UserData[userEmail] = userData
 	return userData,nil
 }
