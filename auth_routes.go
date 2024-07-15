@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/sakthiRathinam/chirpy/internal/authentication"
@@ -14,16 +15,24 @@ func login(w http.ResponseWriter,r *http.Request){
 		sendErrorResponse(w,401,"user not authenticated")
 		return
 	}
-	getUserFromEmail,err := jsonDatabase.GetUser(userPayload.Email)
+	userObj,err := jsonDatabase.GetUser(userPayload.Email)
 	if err != nil {
 		sendErrorResponse(w,401,"user not authenticated")
 		return
 		}
-	authenticated := authentication.IsPasswordMatches([]byte(userPayload.Password),[]byte(getUserFromEmail.Password))
+	authenticated := authentication.IsPasswordMatches([]byte(userPayload.Password),[]byte(userObj.Password))
 	if !authenticated  {
 		sendErrorResponse(w,401,"password not matches")
 		return
 	}
-	
-	sendJSONResponse(w,getUserFromEmail,200)
+	generateJWTToken,err := authentication.CreateToken(userObj.Email,userPayload.ExpiresInSeconds,userObj.Id)
+	if err != nil {
+		sendErrorResponse(w,500,"error while creating token")
+		return
+	}
+
+	fmt.Println(generateJWTToken)
+
+	toSend := map[string]any{"id":userObj.Id,"email":userObj.Email,"token":generateJWTToken}
+	sendJSONResponse(w,toSend,200)
 }

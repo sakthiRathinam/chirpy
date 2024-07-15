@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/joho/godotenv"
 	"github.com/sakthiRathinam/chirpy/internal/storage"
 )
 
@@ -22,6 +23,7 @@ func main(){
 	registerAPIRoutes(&apiMux,&apiConfig)
 	registerStaticServerRoutes(&serveMux,&apiConfig)
 	registerAdminRoutes(&adminMux,&apiConfig)
+	loadEnvVars()
 	serveMux.Handle("/api/*",&apiMux)
 	serveMux.Handle("/admin/*",&adminMux)
 	httpServer := http.Server{
@@ -35,6 +37,10 @@ func main(){
 	}
 }
 
+
+func loadEnvVars(){
+	godotenv.Load("test.env")
+}
 
 func setupJsonStorage() *storage.JsonDatabase{
 	jsonDatabase := storage.CreateJsonDatabase()
