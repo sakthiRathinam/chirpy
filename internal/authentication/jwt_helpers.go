@@ -1,6 +1,7 @@
 package authentication
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"time"
@@ -33,4 +34,18 @@ func CreateToken(email string, expires_at int, id int) (string,error){
 		return "",err
 	}
 	return signedToken,nil
+}
+
+func ValidateToken(token string) (string,error) {
+	claim := ChirpyCliam{}
+	_,err := jwt.ParseWithClaims(token,&claim,func(t *jwt.Token) (interface{},error) {
+		if !t.Valid{
+			return "",errors.New("invalid token")
+		}
+		return "",nil
+	})
+	if err != nil {
+		return "",errors.New("invalid token")
+	}
+	return claim.ID,nil
 }
