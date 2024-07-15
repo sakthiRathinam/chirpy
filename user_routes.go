@@ -9,6 +9,7 @@ import (
 type userRequestPayload struct {
 	Email string `json:"email"`
 	Password string `json:"password"`
+	ExpiresInSeconds int `json:"expires_in_seconds"`
 }
 func addUser(w http.ResponseWriter,r *http.Request){
 	userPayload, err := extractPayloadFromUserRequest(r,userRequestPayload{})
