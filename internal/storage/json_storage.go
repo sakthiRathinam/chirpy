@@ -54,12 +54,20 @@ func (jd *JsonDatabase) AddChirp(chirpMessage string) (chirp,error) {
 	return chirp,err
 }
 
-func (jd *JsonDatabase) AddUser(userEmail string) (user,error) {
+func (jd *JsonDatabase) AddUser(userEmail string,password string) (user,error) {
 	jd.RMtx.Lock()
-	userObj,err := jd.DB.User.addUser(userEmail)
+	userObj,err := jd.DB.User.addUser(userEmail,password)
 	defer jd.RMtx.Unlock()
 	return userObj,err
 }
+
+func (jd *JsonDatabase) GetUser(userEmail string) (user,error) {
+	jd.RMtx.Lock()
+	userObj,err := jd.DB.User.getUser(userEmail)
+	defer jd.RMtx.Unlock()
+	return userObj,err
+}
+
 func (jd *JsonDatabase) GetChirps() ([]chirp,error) {
 	jd.RMtx.RLock()
 	chirp,err := jd.DB.Chirp.getAllChirps()

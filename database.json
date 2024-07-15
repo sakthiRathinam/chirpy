@@ -1,1 +1,1 @@
-{"chirp":{"chirps":{},"indexCounter":2},"user":{"chirps":{"1":{"email":"mloneusk@example.co","id":1},"2":{"email":"dackjorsey@example.co","id":2}},"indexCounter":0}}
+{"chirp":{"chirps":{},"indexCounter":0},"user":{"users":{"saul@bettercall.com":{"email":"saul@bettercall.com","id":1,"password":"$2a$05$TQ58nowDjJQ.shctkr7rXeARtwvhtrTSoqCwZGGUzN4M55vqHeM4W"}},"indexCounter":1}}

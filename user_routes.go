@@ -8,15 +8,16 @@ import (
 
 type userRequestPayload struct {
 	Email string `json:"email"`
+	Password string `json:"password"`
 }
 func addUser(w http.ResponseWriter,r *http.Request){
-	userMail, err := extractPayloadFromUserRequest(r,userRequestPayload{})
+	userPayload, err := extractPayloadFromUserRequest(r,userRequestPayload{})
 	if err != nil {
 		sendErrorResponse(w,500,"")
 	}
-	fmt.Println(userMail)
-	fmt.Printf("%T",userMail)
-	user,err :=jsonDatabase.AddUser(userMail.Email)
+	fmt.Println(userPayload)
+	fmt.Printf("%T",userPayload)
+	user,err :=jsonDatabase.AddUser(userPayload.Email,userPayload.Password)
 	if err != nil {
 		fmt.Println("Failed during adding new user")
 		sendErrorResponse(w,500,"failed while adding the user, please try again!!!!")

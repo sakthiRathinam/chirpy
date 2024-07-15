@@ -1,6 +1,10 @@
 package authentication
 
-import "golang.org/x/crypto/bcrypt"
+import (
+	"fmt"
+
+	"golang.org/x/crypto/bcrypt"
+)
 
 
 
@@ -15,6 +19,7 @@ func HashPassword(password string) (string,error){
 
 
 func IsPasswordMatches(password []byte, hashed_password []byte) bool{
+	fmt.Println(password,hashed_password)
 	err := bcrypt.CompareHashAndPassword(hashed_password,password)
 	return err == nil
 }
