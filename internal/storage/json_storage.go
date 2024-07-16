@@ -60,6 +60,12 @@ func (jd *JsonDatabase) AddUser(userEmail string,password string) (user,error) {
 	defer jd.RMtx.Unlock()
 	return userObj,err
 }
+func (jd *JsonDatabase) UpdateUser(id,userEmail,password string) (user,error) {
+	jd.RMtx.Lock()
+	userObj,err := jd.DB.User.updateUser(id,userEmail,password)
+	defer jd.RMtx.Unlock()
+	return userObj,err
+}
 
 func (jd *JsonDatabase) GetUser(userEmail string) (user,error) {
 	jd.RMtx.Lock()

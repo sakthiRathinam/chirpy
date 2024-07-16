@@ -34,7 +34,6 @@ func (ac *apiConfig) getAdminMetrics(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println(ac.fileServerHits)
 	data := map[string]int{"fileServerHits":ac.fileServerHits}
 	err = teml.Execute(w, data)
 	if err != nil {

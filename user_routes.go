@@ -30,22 +30,31 @@ func addUser(w http.ResponseWriter,r *http.Request){
 }
 
 func updateUser(w http.ResponseWriter,r *http.Request){
-	_, err := extractPayloadFromUserRequest(r,userRequestPayload{})
+	userPayload, err := extractPayloadFromUserRequest(r,userRequestPayload{})
 	if err != nil {
 		sendErrorResponse(w,500,"")
 	}
 
 	authHeader := r.Header.Get("Authorization")
+	fmt.Println(authHeader,"Header string")
 	jwtToken,err := getJWTToken(authHeader)
-
+	
 	if err != nil {
 		sendErrorResponse(w,401,"invalid token")
 		return
 	}
 
-	authentication.ValidateToken(jwtToken)
-
-	sendJSONResponse(w,"sucess",201)
+	id, err := authentication.ValidateAndExtractIDFromToken(jwtToken)
+	if err != nil {
+		sendErrorResponse(w,401,"invalid token")
+		return
+	}
+	updatedUser, err := jsonDatabase.UpdateUser(id,userPayload.Email,userPayload.Password)
+	if err != nil {
+		sendErrorResponse(w,401,"invalid token")
+		return
+	}
+	sendJSONResponse(w,updatedUser,200)
 }
 
 
@@ -63,7 +72,6 @@ func extractPayloadFromUserRequest(r *http.Request,payload userRequestPayload) (
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(&requestBody)
 	if err != nil {
-		fmt.Println("Error decoding paramerts",err)
 		return requestBody,err
 	}
 	return requestBody,nil

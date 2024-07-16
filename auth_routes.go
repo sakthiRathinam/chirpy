@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/sakthiRathinam/chirpy/internal/authentication"
@@ -31,7 +30,6 @@ func login(w http.ResponseWriter,r *http.Request){
 		return
 	}
 
-	fmt.Println(generateJWTToken)
 
 	toSend := map[string]any{"id":userObj.Id,"email":userObj.Email,"token":generateJWTToken}
 	sendJSONResponse(w,toSend,200)

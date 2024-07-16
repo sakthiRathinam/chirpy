@@ -17,12 +17,15 @@ type ChirpyCliam struct {
 
 
 func CreateToken(email string, expires_at int, id int) (string,error){
+	if expires_at == 0 {
+		expires_at = 2
+	}
 	claims := ChirpyCliam{
 		email,
 		jwt.RegisteredClaims{Issuer:"chirpy",
 		Subject:"authenticate chirpy user",           
 		Audience:[]string{"chipryuser","chirp"},  
-		ExpiresAt:jwt.NewNumericDate(time.Now().Add(time.Duration(expires_at) * time.Second)),
+		ExpiresAt:jwt.NewNumericDate(time.Now().Add(time.Duration(expires_at) * time.Minute)),
 		NotBefore:jwt.NewNumericDate(time.Now()),
 		IssuedAt:jwt.NewNumericDate(time.Now()),   
 		ID:fmt.Sprintf("%d",id)}, 
@@ -30,22 +33,25 @@ func CreateToken(email string, expires_at int, id int) (string,error){
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256,claims)
 	signedToken,err := token.SignedString([]byte(signedKey))
 	if err != nil {
+		fmt.Println(err)
 		fmt.Println("failed while creating the token")
 		return "",err
 	}
 	return signedToken,nil
 }
 
-func ValidateToken(token string) (string,error) {
+func ValidateAndExtractIDFromToken(token string) (string,error) {
 	claim := ChirpyCliam{}
-	_,err := jwt.ParseWithClaims(token,&claim,func(t *jwt.Token) (interface{},error) {
-		if !t.Valid{
-			return "",errors.New("invalid token")
-		}
-		return "",nil
+	jwtToken,err := jwt.ParseWithClaims(token,&claim,func(t *jwt.Token) (interface{},error) {
+		signedKeyInBytes := []byte(signedKey)
+		return signedKeyInBytes, nil
 	})
-	if err != nil {
+	if  err!= nil{
 		return "",errors.New("invalid token")
 	}
+	if !jwtToken.Valid{
+		return "",errors.New("invalid token")
+	}
+	fmt.Println(claim.ID,"id hereeeee",token)
 	return claim.ID,nil
 }
