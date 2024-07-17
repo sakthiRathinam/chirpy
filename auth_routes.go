@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/sakthiRathinam/chirpy/internal/authentication"
@@ -14,7 +15,7 @@ func login(w http.ResponseWriter,r *http.Request){
 		sendErrorResponse(w,401,"user not authenticated")
 		return
 	}
-	userObj,err := jsonDatabase.GetUser(userPayload.Email)
+	userObj,err := jsonDatabase.GetUserAndUpdateRefreshToken(userPayload.Email)
 	if err != nil {
 		sendErrorResponse(w,401,"user not authenticated")
 		return
@@ -31,6 +32,14 @@ func login(w http.ResponseWriter,r *http.Request){
 	}
 
 
-	toSend := map[string]any{"id":userObj.Id,"email":userObj.Email,"token":generateJWTToken}
+	toSend := map[string]any{"id":userObj.Id,"email":userObj.Email,"token":generateJWTToken,"refresh_token":userObj.RefreshToken}
 	sendJSONResponse(w,toSend,200)
+}
+
+
+func refreshAccessToken(w http.ResponseWriter,r *http.Request){
+	authHeader := r.Header.Get("Authorization")
+	fmt.Println(authHeader,"Header string")
+	jwtToken,err := getJWTToken(authHeader)
+	
 }

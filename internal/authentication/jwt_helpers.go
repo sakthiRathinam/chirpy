@@ -1,6 +1,8 @@
 package authentication
 
 import (
+	"crypto/rand"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"os"
@@ -18,14 +20,14 @@ type ChirpyCliam struct {
 
 func CreateToken(email string, expires_at int, id int) (string,error){
 	if expires_at == 0 {
-		expires_at = 2
+		expires_at = 10
 	}
 	claims := ChirpyCliam{
 		email,
 		jwt.RegisteredClaims{Issuer:"chirpy",
 		Subject:"authenticate chirpy user",           
 		Audience:[]string{"chipryuser","chirp"},  
-		ExpiresAt:jwt.NewNumericDate(time.Now().Add(time.Duration(expires_at) * time.Minute)),
+		ExpiresAt:jwt.NewNumericDate(time.Now().Add(time.Duration(expires_at) * time.Second)),
 		NotBefore:jwt.NewNumericDate(time.Now()),
 		IssuedAt:jwt.NewNumericDate(time.Now()),   
 		ID:fmt.Sprintf("%d",id)}, 
@@ -54,4 +56,15 @@ func ValidateAndExtractIDFromToken(token string) (string,error) {
 	}
 	fmt.Println(claim.ID,"id hereeeee",token)
 	return claim.ID,nil
+}
+
+
+func CreateRefreshToken() string {
+	byteArray := make([]byte,32)
+	_,err := rand.Read(byteArray)
+	if err != nil {
+		return ""
+	}
+	return hex.EncodeToString(byteArray)
+
 }

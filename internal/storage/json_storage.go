@@ -74,6 +74,13 @@ func (jd *JsonDatabase) GetUser(userEmail string) (user,error) {
 	return userObj,err
 }
 
+func (jd *JsonDatabase) GetUserAndUpdateRefreshToken(userEmail string) (user,error) {
+	jd.RMtx.Lock()
+	userObj,err := jd.DB.User.getandUpdateRefreshToken(userEmail)
+	defer jd.RMtx.Unlock()
+	return userObj,err
+}
+
 func (jd *JsonDatabase) GetChirps() ([]chirp,error) {
 	jd.RMtx.RLock()
 	chirp,err := jd.DB.Chirp.getAllChirps()
