@@ -67,6 +67,20 @@ func (jd *JsonDatabase) UpdateUser(id,userEmail,password string) (user,error) {
 	return userObj,err
 }
 
+func (jd *JsonDatabase) ValidateRefreshToken(refreshToken string) (user,bool) {
+	jd.RMtx.Lock()
+	userObj,validToken := jd.DB.User.validateRefreshToken(refreshToken)
+	defer jd.RMtx.Unlock()
+	return userObj,validToken
+}
+
+func (jd *JsonDatabase) RevokeRefreshToken(refreshToken string) (user,bool) {
+	jd.RMtx.Lock()
+	userObj,validToken := jd.DB.User.revokeRefreshToken(refreshToken)
+	defer jd.RMtx.Unlock()
+	return userObj,validToken
+}
+
 func (jd *JsonDatabase) GetUser(userEmail string) (user,error) {
 	jd.RMtx.Lock()
 	userObj,err := jd.DB.User.getUser(userEmail)

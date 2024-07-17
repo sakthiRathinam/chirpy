@@ -1,1 +1,1 @@
-{"chirp":{"chirps":{},"indexCounter":0},"user":{"users":{"1":{"email":"mike@bettercall.com","id":1,"password":"$2a$05$l9hBbsAEeBPAcWFAmTfbHOI62Z/KlEkNgUWSSN2iIvEdlkk1hi/du"}},"indexCounter":1}}
+{"chirp":{"chirps":{},"indexCounter":0},"user":{"users":{"1":{"email":"chuck@bettercall.com","id":1,"password":"$2a$05$AVVkr.Ck.raFJKSJh3lx2eWxbMt00a6aka0lGL3lisSK9WlAyOPVy","refresh_token":"599f1af62c8f55865d1ac0a44d9ca57ca075d085c8bb93608791dd724e78c260","token_expiry":"2024-07-18T01:37:53.90230885+05:30"}},"indexCounter":1}}

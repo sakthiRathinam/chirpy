@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"reflect"
 	"time"
 
 	"github.com/sakthiRathinam/chirpy/internal/authentication"
@@ -13,8 +14,8 @@ type user struct {
 	Email string `json:"email"`
 	Id int `json:"id"`
 	Password string `json:"password"`
-	RefreshToken string `json:refresh_token`
-	token_expiry time.Time
+	RefreshToken string `json:"refresh_token"`
+	TokenExpiry time.Time `json:"token_expiry"`
 }
 
 type userData struct {
@@ -89,15 +90,101 @@ func (cd *userData) getandUpdateRefreshToken(userEmail string) (user,error) {
 	if err != nil {
 		return user{},err
 	}
-	userObj, ok := getUserDataByEmail(userEmail,&dbData)
+	userObj, ok := getUserDataByStructAttr(userEmail,"Email",&dbData)
 	if !ok {
 		return user{},errors.New("user does not exists")
 	}
 	generateRefreshToken := authentication.CreateRefreshToken()
-	userObj.RefreshToken = generateRefreshToken
-	userObj.token_expiry = time.Now().Add(time.Duration(1) * time.Hour)
+	dbData.User.UserData[fmt.Sprintf("%d",userObj.Id)] = user{Email:userEmail,Id: userObj.Id,Password:userObj.Password,RefreshToken: generateRefreshToken,TokenExpiry: time.Now().Add(time.Duration(1) * time.Hour)}
+	fmt.Println("updated token",generateRefreshToken)
+	updatedByteData, err := json.Marshal(dbData)
+	if err != nil {
+		return user{},err
+	}
+	err = overwriteJsonToFile(filePTR,updatedByteData)
+	if err != nil {
+		return user{},err
+		}
+	return dbData.User.UserData[fmt.Sprintf("%d",userObj.Id)],nil
+}
+
+
+func (cd *userData) validateRefreshToken(refershToken string) (user,bool) {
+	filePTR,err := os.OpenFile(db_path,os.O_RDWR|os.O_APPEND,7777)
+	if err != nil {
+		fmt.Println("Error while opening the file")
+		return user{},false
+		}
+	defer filePTR.Close()
+	dbData,err := getJsonFileFromStorage(filePTR)
+	if err != nil {
+		return user{},false
+	}
+	userObj, ok := getUserDataByStructAttr(refershToken,"RefreshToken",&dbData)
+	fmt.Println(userObj,ok,"refressh toke founddddddddddddddddddddddddd")
+	if !ok {
+		return user{},false
+	}
+
+	if userObj.TokenExpiry.Before(time.Now()) {
+		return userObj,false
+	}
+	return userObj,true
+}
+
+func (cd *userData) revokeRefreshToken(refershToken string) (user,bool) {
+	filePTR,err := os.OpenFile(db_path,os.O_RDWR|os.O_APPEND,7777)
+	if err != nil {
+		fmt.Println("Error while opening the file")
+		return user{},false
+		}
+	defer filePTR.Close()
+	dbData,err := getJsonFileFromStorage(filePTR)
+	if err != nil {
+		return user{},false
+	}
+	userObj, ok := getUserDataByStructAttr(refershToken,"RefreshToken",&dbData)
+	if !ok {
+		return user{},false
+	}
+
+	fmt.Println("user token got revoked",userObj.RefreshToken)
+	userObj.TokenExpiry = time.Now().Add(-time.Duration(5 * time.Second))
 	dbData.User.UserData[fmt.Sprintf("%d",userObj.Id)] = userObj
-	return userObj,nil
+	updatedByteData, err := json.Marshal(dbData)
+	if err != nil {
+		return user{},false
+	}
+	err = overwriteJsonToFile(filePTR,updatedByteData)
+	if err != nil {
+		return user{},false
+		}
+	return userObj,true
+
+}
+
+
+func getUserDataByStructAttr(attr string,attrName string,dbStruct *databaseStructure) (user,bool){
+	for _, userObj := range dbStruct.User.UserData {
+		value , err := getAttribute(userObj,attrName)
+		if err != nil {
+			continue
+		}
+		if value == attr {
+			return userObj,true
+		}
+	}
+	return user{},false
+}
+
+
+func getAttribute(obj interface{}, attrName string) (interface{}, error) {
+	v := reflect.ValueOf(obj)
+	field := v.FieldByName(attrName)
+	if !field.IsValid() {
+		return nil, fmt.Errorf("no such field: %s", attrName)
+	}
+	return field.Interface(), nil
 }
 
 
@@ -113,12 +200,12 @@ func (cd *userData) updateUser(id,userEmail,password string) (user,error){
 		return user{},err
 	}
 	userObj,ok := dbData.User.UserData[id]
+	fmt.Println(userObj.RefreshToken,"before updating")
 	if !ok {
 		return user{},errors.New("user doesn't exists")
 	}
 	hashedPassword, _ := authentication.HashPassword(password)
-	updatedUserObj := user{Email:userEmail,Id: userObj.Id,Password:hashedPassword}
-	dbData.User.UserData[id] = user{Email:userEmail,Id: userObj.Id,Password:hashedPassword}
+	dbData.User.UserData[id] = user{Email:userEmail,Id: userObj.Id,Password:hashedPassword,RefreshToken: userObj.RefreshToken,TokenExpiry: userObj.TokenExpiry}
 	updatedByteData, err := json.Marshal(dbData)
 	if err != nil {
 		return user{},err
@@ -127,7 +214,7 @@ func (cd *userData) updateUser(id,userEmail,password string) (user,error){
 	if err != nil {
 		return user{},err
 		}
-	return updatedUserObj,nil
+	return dbData.User.UserData[id],nil
 }
 
 
