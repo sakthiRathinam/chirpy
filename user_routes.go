@@ -36,7 +36,6 @@ func updateUser(w http.ResponseWriter,r *http.Request){
 	}
 
 	authHeader := r.Header.Get("Authorization")
-	fmt.Println(authHeader,"Header string")
 	jwtToken,err := getJWTToken(authHeader)
 	
 	if err != nil {

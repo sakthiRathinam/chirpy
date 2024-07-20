@@ -10,6 +10,7 @@ import (
 type chirp struct {
 	Body string `json:"body"`
 	Id int `json:"id"`
+	AuthorID int `json:"author_id"`
 }
 
 type chirpData struct {
@@ -18,7 +19,7 @@ type chirpData struct {
 }
 
 
-func (cd *chirpData) addChirp(chirpMessage string) (chirp,error) {
+func (cd *chirpData) addChirp(chirpMessage string, authorID int) (chirp,error) {
 	filePTR,err := os.OpenFile(db_path,os.O_RDWR|os.O_APPEND,7777)
 	if err != nil {
 		fmt.Println("Error while opening the file")
@@ -29,7 +30,7 @@ func (cd *chirpData) addChirp(chirpMessage string) (chirp,error) {
 	if err != nil {
 		return chirp{},err
 	}
-	chirpObj,err := addChirpsData(&chirpsData,chirpMessage)
+	chirpObj,err := addChirpsData(&chirpsData,chirpMessage,authorID)
 	if err != nil {
 		return chirp{},err
 	}
@@ -99,12 +100,41 @@ func (cd *chirpData) getChirp(chirpID string)(chirp,error){
 	return chirp,nil
 }
 
-func addChirpsData(dbStruct *databaseStructure,chirpMessage string) (chirp,error) {
+func (cd *chirpData) deleteChirp(chirpID string)(bool,error){
+	chirpsData := databaseStructure{}
+	filePTR,err := os.OpenFile(db_path,os.O_RDWR|os.O_APPEND,7777)
+	if err != nil {
+		fmt.Println("Error while opening the file")
+		return false,errors.New("error while opening the file")
+		}
+	defer filePTR.Close()
+	fileData,err :=  io.ReadAll(filePTR)
+	if err != nil {
+		return false,nil
+	}
+	json.Unmarshal(fileData,&chirpsData)
+	_,exists := chirpsData.Chirp.Chirps[chirpID]
+	if !exists{
+		return false, errors.New("chirp not exists")
+	}
+	delete(chirpsData.Chirp.Chirps,chirpID)
+	updatedByteData, err := json.Marshal(chirpsData)
+	if err != nil {
+		return false,nil
+	}
+	err = overwriteJsonToFile(filePTR,updatedByteData)
+	if err != nil {
+		return false,nil
+		}
+	return true,nil
+}
+
+func addChirpsData(dbStruct *databaseStructure,chirpMessage string,authorID int) (chirp,error) {
 	if dbStruct.Chirp.Chirps == nil {
 		dbStruct.Chirp.Chirps = make(map[string]chirp)
 	}
 	dbStruct.Chirp.IndexCounter = dbStruct.Chirp.IndexCounter + 1
-	chirpData := chirp{Body:chirpMessage,Id: dbStruct.Chirp.IndexCounter}
+	chirpData := chirp{Body:chirpMessage,Id: dbStruct.Chirp.IndexCounter,AuthorID: authorID}
 	dbStruct.Chirp.Chirps[fmt.Sprintf("%d",dbStruct.Chirp.IndexCounter)] = chirpData
 	return chirpData,nil
 }

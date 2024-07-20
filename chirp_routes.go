@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"net/http"
 	"regexp"
+	"strconv"
+
+	"github.com/sakthiRathinam/chirpy/internal/authentication"
 )
 type chirpRequestPayload struct {
 	Body string `json:"body"`
@@ -39,7 +42,25 @@ func addChirp(w http.ResponseWriter,r *http.Request){
 		sendErrorResponse(w,400,"Chirp is too long")
 		return
 	}
-	chirp,err :=jsonDatabase.AddChirp(chirpMessage.Body)
+	authHeader := r.Header.Get("Authorization")
+	jwtToken,err := getJWTToken(authHeader)
+	
+	if err != nil {
+		sendErrorResponse(w,401,"invalid token")
+		return
+	}
+
+	stringID, err := authentication.ValidateAndExtractIDFromToken(jwtToken)
+	if err != nil {
+		sendErrorResponse(w,401,"invalid token")
+		return
+	}
+	integerID,err := strconv.Atoi(stringID)
+	if err != nil {
+        fmt.Println("Error:", err)
+        return
+    }
+	chirp,err :=jsonDatabase.AddChirp(chirpMessage.Body,integerID)
 	if err != nil {
 		fmt.Println("Failed while adding chirp")
 		sendErrorResponse(w,500,"failed while adding the chirp, please try again!!!!")
@@ -71,6 +92,36 @@ func getChirp(w http.ResponseWriter,r *http.Request){
 		return
 	}
 	sendJSONResponse(w,chirp,200)
+}
+
+
+func deleteChirp(w http.ResponseWriter, r *http.Request) {
+	chirpID := r.PathValue("chirpID")
+	authHeader := r.Header.Get("Authorization")
+	jwtToken,err := getJWTToken(authHeader)
+	
+	if err != nil {
+		sendErrorResponse(w,401,"invalid token")
+		return
+	}
+
+	stringID, err := authentication.ValidateAndExtractIDFromToken(jwtToken)
+	if err != nil {
+		sendErrorResponse(w,401,"invalid token")
+		return
+	}
+	integerID,err := strconv.Atoi(stringID)
+	if err != nil {
+        fmt.Println("Error:", err)
+        return
+    }
+
+	deleteChirp,err := jsonDatabase.DddChirp(chirpID)
+	if deleteChirp {
+		sendJSONResponse(w,"Not authorized",403)
+	}
+	sendJSONResponse(w,"deleted",204)
+
 }
 
 

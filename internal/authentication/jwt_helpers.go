@@ -54,7 +54,6 @@ func ValidateAndExtractIDFromToken(token string) (string,error) {
 	if !jwtToken.Valid{
 		return "",errors.New("invalid token")
 	}
-	fmt.Println(claim.ID,"id hereeeee",token)
 	return claim.ID,nil
 }
 
