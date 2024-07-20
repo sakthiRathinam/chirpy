@@ -100,7 +100,7 @@ func (cd *chirpData) getChirp(chirpID string)(chirp,error){
 	return chirp,nil
 }
 
-func (cd *chirpData) deleteChirp(chirpID string)(bool,error){
+func (cd *chirpData) deleteChirp(chirpID string,authorID int)(bool,error){
 	chirpsData := databaseStructure{}
 	filePTR,err := os.OpenFile(db_path,os.O_RDWR|os.O_APPEND,7777)
 	if err != nil {
@@ -113,11 +113,10 @@ func (cd *chirpData) deleteChirp(chirpID string)(bool,error){
 		return false,nil
 	}
 	json.Unmarshal(fileData,&chirpsData)
-	_,exists := chirpsData.Chirp.Chirps[chirpID]
+	chirp,exists := chirpsData.Chirp.Chirps[chirpID]
 	if !exists{
 		return false, errors.New("chirp not exists")
 	}
-	delete(chirpsData.Chirp.Chirps,chirpID)
 	updatedByteData, err := json.Marshal(chirpsData)
 	if err != nil {
 		return false,nil
@@ -126,6 +125,11 @@ func (cd *chirpData) deleteChirp(chirpID string)(bool,error){
 	if err != nil {
 		return false,nil
 		}
+	if chirp.AuthorID != authorID {
+		return false,nil
+	}
+	fmt.Println(authorID,"author id",chirp.AuthorID,"chirp author id")
+	delete(chirpsData.Chirp.Chirps,chirpID)
 	return true,nil
 }
 

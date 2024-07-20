@@ -54,9 +54,9 @@ func (jd *JsonDatabase) AddChirp(chirpMessage string,authorID int) (chirp,error)
 	return chirp,err
 }
 
-func (jd *JsonDatabase) DddChirp(chirpID string) (bool,error) {
+func (jd *JsonDatabase) DeleteChirp(chirpID string,authorID int) (bool,error) {
 	jd.RMtx.Lock()
-	chirp,err := jd.DB.Chirp.deleteChirp(chirpID)
+	chirp,err := jd.DB.Chirp.deleteChirp(chirpID,authorID)
 	defer jd.RMtx.Unlock()
 	return chirp,err
 }

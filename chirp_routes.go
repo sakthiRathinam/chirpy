@@ -115,10 +115,15 @@ func deleteChirp(w http.ResponseWriter, r *http.Request) {
         fmt.Println("Error:", err)
         return
     }
-
-	deleteChirp,err := jsonDatabase.DddChirp(chirpID)
-	if deleteChirp {
-		sendJSONResponse(w,"Not authorized",403)
+	fmt.Println(chirpID,integerID,"from the response")
+	deleteChirp,err := jsonDatabase.DeleteChirp(chirpID,integerID)
+	if err != nil {
+		sendErrorResponse(w,400,"Not authorized")
+		return
+	}
+	if !deleteChirp {
+		sendErrorResponse(w,403,"Not authorized")
+		return
 	}
 	sendJSONResponse(w,"deleted",204)
 
