@@ -69,6 +69,21 @@ func addChirp(w http.ResponseWriter,r *http.Request){
 }
 
 func getAllChirps(w http.ResponseWriter,r *http.Request){
+	authorID := r.URL.Query().Get("author_id")
+	if authorID != ""{
+		integerAuthID,err := strconv.Atoi(authorID)
+		if err != nil {
+			sendErrorResponse(w,400,"Invalid author id format")
+			return
+		}
+		chirpObjs,err := jsonDatabase.GetChirpsForAuthorID(integerAuthID)
+		if err != nil{
+		sendErrorResponse(w,500,"error while fetching the chirps")
+		return
+		}
+		sendJSONResponse(w,chirpObjs,200)
+		return
+	}
 	chirpObjs,err := jsonDatabase.GetChirps()
 	if err != nil{
 		sendErrorResponse(w,500,"error while fetching the chirps")

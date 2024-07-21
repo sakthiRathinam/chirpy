@@ -6,12 +6,26 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"sort"
 )
 type chirp struct {
 	Body string `json:"body"`
 	Id int `json:"id"`
 	AuthorID int `json:"author_id"`
 }
+
+
+type ByChirpDesc []chirp 
+
+func (a ByChirpDesc) Len() int           { return len(a) }
+func (a ByChirpDesc) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a ByChirpDesc) Less(i, j int) bool { return a[i].AuthorID > a[j].AuthorID }
+
+type ByChirpAsc []chirp 
+
+func (a ByChirpAsc) Len() int           { return len(a) }
+func (a ByChirpAsc) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a ByChirpAsc) Less(i, j int) bool { return a[i].AuthorID > a[j].AuthorID }
 
 type chirpData struct {
 	Chirps map[string]chirp `json:"chirps"`
@@ -57,26 +71,26 @@ func getJsonFileFromStorage(file *os.File) (databaseStructure,error) {
 	return chirpsData,nil
 }
 
-func (cd *chirpData) getAllChirps()([]chirp,error){
+func (cd *chirpData) getAllChirps(sortBy string)([]chirp,error){
 	return getAllChirpsFromDB()
 }
 
 
-func (cd *chirpData) getAllChirpsForAuthor(authorID int)([]chirp,error){
+func (cd *chirpData) getAllChirpsForAuthor(authorID int,sortBy string)([]chirp,error){
 	allChirps,err := getAllChirpsFromDB()
 	if err != nil {
 		return allChirps,err
 	}
-	for index,value := range allChirps {
-		if value.AuthorID != authorID {
-			allChirps = append(allChirps[:index],allChirps[index+1:]...)
+	for i:=len(allChirps) -1; i >=0; i-- {
+		if allChirps[i].AuthorID != authorID {
+			allChirps = append(allChirps[:i],allChirps[i+1:]...)
 		}
 	}
 	return allChirps,err
 }
 
 
-func getAllChirpsFromDB()([]chirp,error){
+func getAllChirpsFromDB(sortBy string)([]chirp,error){
 	chirpsData := databaseStructure{}
 	chirps := []chirp{}
 	filePTR,err := os.OpenFile(db_path,os.O_RDWR|os.O_APPEND,7777)
@@ -89,19 +103,20 @@ func getAllChirpsFromDB()([]chirp,error){
 	if err != nil {
 		return chirps,err	
 	}
+	if sortBy != ""{
+		if sortBy == "asc" {
+			sort.Sort(ByChirpAsc(chirps))
+
+		}else {
+			sort.Sort(ByChirpDesc(chirps))
+		}
+	}
 	json.Unmarshal(fileData,&chirpsData)
 	for _,value := range chirpsData.Chirp.Chirps{
 		chirps = append(chirps, value)
 	}
 	return chirps,nil
 }
-
-
-
-
-
-
-
 
 func (cd *chirpData) getChirp(chirpID string)(chirp,error){
 	chirpsData := databaseStructure{}
