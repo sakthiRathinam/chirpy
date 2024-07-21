@@ -65,6 +65,7 @@ func registerAPIRoutes(apiMux *http.ServeMux,apiConfig *apiConfig){
 	apiMux.HandleFunc("POST /api/refresh",refreshAccessToken)
 	apiMux.HandleFunc("GET /api/chirps/{chirpID}",getChirp)
 	apiMux.HandleFunc("DELETE /api/chirps/{chirpID}",deleteChirp)
+	apiMux.HandleFunc("POST /api/polka/webhooks",polkaWebhook)
 	apiMux.HandleFunc("/api/reset",apiConfig.resetMetrics)
 }
 

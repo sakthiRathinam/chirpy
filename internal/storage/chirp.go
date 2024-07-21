@@ -58,6 +58,25 @@ func getJsonFileFromStorage(file *os.File) (databaseStructure,error) {
 }
 
 func (cd *chirpData) getAllChirps()([]chirp,error){
+	return getAllChirpsFromDB()
+}
+
+
+func (cd *chirpData) getAllChirpsForAuthor(authorID int)([]chirp,error){
+	allChirps,err := getAllChirpsFromDB()
+	if err != nil {
+		return allChirps,err
+	}
+	for index,value := range allChirps {
+		if value.AuthorID != authorID {
+			allChirps = append(allChirps[:index],allChirps[index+1:]...)
+		}
+	}
+	return allChirps,err
+}
+
+
+func getAllChirpsFromDB()([]chirp,error){
 	chirpsData := databaseStructure{}
 	chirps := []chirp{}
 	filePTR,err := os.OpenFile(db_path,os.O_RDWR|os.O_APPEND,7777)
@@ -75,8 +94,13 @@ func (cd *chirpData) getAllChirps()([]chirp,error){
 		chirps = append(chirps, value)
 	}
 	return chirps,nil
-
 }
+
+
+
+
+
+
 
 
 func (cd *chirpData) getChirp(chirpID string)(chirp,error){

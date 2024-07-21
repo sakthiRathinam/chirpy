@@ -32,7 +32,7 @@ func login(w http.ResponseWriter,r *http.Request){
 	}
 
 	fmt.Println(userObj)
-	toSend := map[string]any{"id":userObj.Id,"email":userObj.Email,"token":generateJWTToken,"refresh_token":userObj.RefreshToken}
+	toSend := map[string]any{"id":userObj.Id,"email":userObj.Email,"token":generateJWTToken,"refresh_token":userObj.RefreshToken,"is_chirpy_red":userObj.ChirpyRed}
 	sendJSONResponse(w,toSend,200)
 }
 
@@ -54,7 +54,7 @@ func refreshAccessToken(w http.ResponseWriter,r *http.Request){
 		sendErrorResponse(w,500,"error while creating token")
 		return
 	}
-	toSend := map[string]any{"id":userObj.Id,"email":userObj.Email,"token":generateJWTToken,"refresh_token":userObj.RefreshToken}
+	toSend := map[string]any{"id":userObj.Id,"email":userObj.Email,"token":generateJWTToken,"refresh_token":userObj.RefreshToken,"is_chirpy_red":userObj.ChirpyRed}
 	sendJSONResponse(w,toSend,200)
 }
 
@@ -72,3 +72,5 @@ func revokeAccessToken(w http.ResponseWriter,r *http.Request){
 	}
 	sendJSONResponse(w,"revoked",204)
 }
+
+

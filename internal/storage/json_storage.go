@@ -61,6 +61,13 @@ func (jd *JsonDatabase) DeleteChirp(chirpID string,authorID int) (bool,error) {
 	return chirp,err
 }
 
+func (jd *JsonDatabase) UpdateChirpyRed(userID int) (user,error) {
+	jd.RMtx.Lock()
+	chirp,err := jd.DB.User.getAndUpdateChirpyRed(userID)
+	defer jd.RMtx.Unlock()
+	return chirp,err
+}
+
 func (jd *JsonDatabase) AddUser(userEmail string,password string) (user,error) {
 	jd.RMtx.Lock()
 	userObj,err := jd.DB.User.addUser(userEmail,password)
@@ -105,6 +112,13 @@ func (jd *JsonDatabase) GetUserAndUpdateRefreshToken(userEmail string) (user,err
 func (jd *JsonDatabase) GetChirps() ([]chirp,error) {
 	jd.RMtx.RLock()
 	chirp,err := jd.DB.Chirp.getAllChirps()
+	defer jd.RMtx.RUnlock()
+	return chirp,err
+}
+
+func (jd *JsonDatabase) GetChirpsForAuthorID(authorID int) ([]chirp,error) {
+	jd.RMtx.RLock()
+	chirp,err := jd.DB.Chirp.getAllChirpsForAuthor(authorID)
 	defer jd.RMtx.RUnlock()
 	return chirp,err
 }
