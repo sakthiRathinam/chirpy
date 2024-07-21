@@ -109,16 +109,16 @@ func (jd *JsonDatabase) GetUserAndUpdateRefreshToken(userEmail string) (user,err
 	return userObj,err
 }
 
-func (jd *JsonDatabase) GetChirps() ([]chirp,error) {
+func (jd *JsonDatabase) GetChirps(sortBy string) ([]chirp,error) {
 	jd.RMtx.RLock()
-	chirp,err := jd.DB.Chirp.getAllChirps()
+	chirp,err := jd.DB.Chirp.getAllChirps(sortBy)
 	defer jd.RMtx.RUnlock()
 	return chirp,err
 }
 
-func (jd *JsonDatabase) GetChirpsForAuthorID(authorID int) ([]chirp,error) {
+func (jd *JsonDatabase) GetChirpsForAuthorID(authorID int,sortBy string) ([]chirp,error) {
 	jd.RMtx.RLock()
-	chirp,err := jd.DB.Chirp.getAllChirpsForAuthor(authorID)
+	chirp,err := jd.DB.Chirp.getAllChirpsForAuthor(authorID,sortBy)
 	defer jd.RMtx.RUnlock()
 	return chirp,err
 }

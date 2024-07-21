@@ -19,13 +19,13 @@ type ByChirpDesc []chirp
 
 func (a ByChirpDesc) Len() int           { return len(a) }
 func (a ByChirpDesc) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
-func (a ByChirpDesc) Less(i, j int) bool { return a[i].AuthorID > a[j].AuthorID }
+func (a ByChirpDesc) Less(i, j int) bool { return a[i].Id > a[j].Id }
 
 type ByChirpAsc []chirp 
 
 func (a ByChirpAsc) Len() int           { return len(a) }
 func (a ByChirpAsc) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
-func (a ByChirpAsc) Less(i, j int) bool { return a[i].AuthorID > a[j].AuthorID }
+func (a ByChirpAsc) Less(i, j int) bool { return a[i].Id < a[j].Id }
 
 type chirpData struct {
 	Chirps map[string]chirp `json:"chirps"`
@@ -72,12 +72,12 @@ func getJsonFileFromStorage(file *os.File) (databaseStructure,error) {
 }
 
 func (cd *chirpData) getAllChirps(sortBy string)([]chirp,error){
-	return getAllChirpsFromDB()
+	return getAllChirpsFromDB(sortBy)
 }
 
 
 func (cd *chirpData) getAllChirpsForAuthor(authorID int,sortBy string)([]chirp,error){
-	allChirps,err := getAllChirpsFromDB()
+	allChirps,err := getAllChirpsFromDB(sortBy)
 	if err != nil {
 		return allChirps,err
 	}
@@ -103,17 +103,18 @@ func getAllChirpsFromDB(sortBy string)([]chirp,error){
 	if err != nil {
 		return chirps,err	
 	}
-	if sortBy != ""{
-		if sortBy == "asc" {
-			sort.Sort(ByChirpAsc(chirps))
-
-		}else {
-			sort.Sort(ByChirpDesc(chirps))
-		}
-	}
 	json.Unmarshal(fileData,&chirpsData)
 	for _,value := range chirpsData.Chirp.Chirps{
 		chirps = append(chirps, value)
+		}
+	if sortBy != ""{
+		if sortBy == "asc" {
+			sort.Sort(ByChirpAsc(chirps))
+			fmt.Println("sorted by ascending")
+		}else {
+			sort.Sort(ByChirpDesc(chirps))
+			fmt.Println("sorted by descending")
+		}
 	}
 	return chirps,nil
 }
