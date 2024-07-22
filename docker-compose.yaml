@@ -1,0 +1,11 @@
+version: '3.8'
+services:
+  chirpyserver:
+    build:
+      context: ./
+      dockerfile: Dockerdevfile
+    container_name: chirpy-server
+    ports:
+      - "8080:8080"
+    volumes:
+      - .:/app
